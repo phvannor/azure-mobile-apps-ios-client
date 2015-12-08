@@ -141,6 +141,18 @@
 		A2C14C6A19105D9F00A58609 /* MSSyncContextReadResult.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C14C6819105D9F00A58609 /* MSSyncContextReadResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A2C14C6B19105D9F00A58609 /* MSSyncContextReadResult.m in Sources */ = {isa = PBXBuildFile; fileRef = A2C14C6919105D9F00A58609 /* MSSyncContextReadResult.m */; };
 		A319A02A1BD9BA69004D2A49 /* MSTestWaiter.m in Sources */ = {isa = PBXBuildFile; fileRef = CF4D498B1A3253E2006AEB70 /* MSTestWaiter.m */; };
+		A34B54F11C18AB1B00FBD33D /* Customer+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54D91C18AAFC00FBD33D /* Customer+CoreDataProperties.m */; };
+		A34B54F21C18AB1D00FBD33D /* Customer+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54D91C18AAFC00FBD33D /* Customer+CoreDataProperties.m */; };
+		A34B54F31C18AB2500FBD33D /* Customer.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54DB1C18AAFC00FBD33D /* Customer.m */; };
+		A34B54F41C18AB2600FBD33D /* Customer.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54DB1C18AAFC00FBD33D /* Customer.m */; };
+		A34B54F51C18AB2A00FBD33D /* Item.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54DD1C18AAFC00FBD33D /* Item.m */; };
+		A34B54F61C18AB2B00FBD33D /* Item.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54DD1C18AAFC00FBD33D /* Item.m */; };
+		A34B54F71C18AB2E00FBD33D /* Item+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54DF1C18AAFC00FBD33D /* Item+CoreDataProperties.m */; };
+		A34B54F81C18AB2F00FBD33D /* Item+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54DF1C18AAFC00FBD33D /* Item+CoreDataProperties.m */; };
+		A34B54F91C18AB3700FBD33D /* Order.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54E11C18AAFC00FBD33D /* Order.m */; };
+		A34B54FA1C18AB3800FBD33D /* Order.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54E11C18AAFC00FBD33D /* Order.m */; };
+		A34B54FB1C18AB3B00FBD33D /* Order+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54E31C18AAFC00FBD33D /* Order+CoreDataProperties.m */; };
+		A34B54FC1C18AB3C00FBD33D /* Order+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = A34B54E31C18AAFC00FBD33D /* Order+CoreDataProperties.m */; };
 		A3514E3D1BCC62380032B74C /* MSClientConnectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A3514E3C1BCC62380032B74C /* MSClientConnectionTests.m */; };
 		A3514E3E1BCC64AB0032B74C /* MSClientConnectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A3514E3C1BCC62380032B74C /* MSClientConnectionTests.m */; };
 		A3D7153A1C1A09EC00545C0B /* MSManagedObjectObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = A3D715391C1A09EC00545C0B /* MSManagedObjectObserver.m */; };
@@ -439,6 +451,18 @@
 		A2ADF7E81914481B0078BB16 /* MSTableOperationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSTableOperationTests.m; sourceTree = "<group>"; };
 		A2C14C6819105D9F00A58609 /* MSSyncContextReadResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSSyncContextReadResult.h; sourceTree = "<group>"; };
 		A2C14C6919105D9F00A58609 /* MSSyncContextReadResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSSyncContextReadResult.m; sourceTree = "<group>"; };
+		A34B54D81C18AAFC00FBD33D /* Customer+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Customer+CoreDataProperties.h"; path = "Classes/Customer+CoreDataProperties.h"; sourceTree = "<group>"; };
+		A34B54D91C18AAFC00FBD33D /* Customer+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Customer+CoreDataProperties.m"; path = "Classes/Customer+CoreDataProperties.m"; sourceTree = "<group>"; };
+		A34B54DA1C18AAFC00FBD33D /* Customer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Customer.h; path = Classes/Customer.h; sourceTree = "<group>"; };
+		A34B54DB1C18AAFC00FBD33D /* Customer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Customer.m; path = Classes/Customer.m; sourceTree = "<group>"; };
+		A34B54DC1C18AAFC00FBD33D /* Item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Item.h; path = Classes/Item.h; sourceTree = "<group>"; };
+		A34B54DD1C18AAFC00FBD33D /* Item.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Item.m; path = Classes/Item.m; sourceTree = "<group>"; };
+		A34B54DE1C18AAFC00FBD33D /* Item+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Item+CoreDataProperties.h"; path = "Classes/Item+CoreDataProperties.h"; sourceTree = "<group>"; };
+		A34B54DF1C18AAFC00FBD33D /* Item+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Item+CoreDataProperties.m"; path = "Classes/Item+CoreDataProperties.m"; sourceTree = "<group>"; };
+		A34B54E01C18AAFC00FBD33D /* Order.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Order.h; path = Classes/Order.h; sourceTree = "<group>"; };
+		A34B54E11C18AAFC00FBD33D /* Order.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Order.m; path = Classes/Order.m; sourceTree = "<group>"; };
+		A34B54E21C18AAFC00FBD33D /* Order+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Order+CoreDataProperties.h"; path = "Classes/Order+CoreDataProperties.h"; sourceTree = "<group>"; };
+		A34B54E31C18AAFC00FBD33D /* Order+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Order+CoreDataProperties.m"; path = "Classes/Order+CoreDataProperties.m"; sourceTree = "<group>"; };
 		A3514E3C1BCC62380032B74C /* MSClientConnectionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSClientConnectionTests.m; sourceTree = "<group>"; };
 		A3D715391C1A09EC00545C0B /* MSManagedObjectObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSManagedObjectObserver.m; sourceTree = "<group>"; };
 		A3D7153B1C1A09F300545C0B /* MSManagedObjectObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSManagedObjectObserver.h; sourceTree = "<group>"; };
@@ -641,6 +665,7 @@
 			isa = PBXGroup;
 			children = (
 				A3D715411C1A0A4200545C0B /* MSManagedObjectObserverTests.m */,
+				A3DEA25A1C18A91F003A24D5 /* Classes */,
 				A295B2B2192AB2040067562E /* MSCoreDataStoreTests.m */,
 				A28224B1192ACFB700EF8743 /* CoreDataTestModel.xcdatamodeld */,
 				A29F44A11953CBF30063C0C1 /* MSCoreDataStore+TestHelper.h */,
@@ -692,6 +717,25 @@
 				A214410B182631A500C2E762 /* MSTableFuncTests.m */,
 			);
 			name = Functional;
+			sourceTree = "<group>";
+		};
+		A3DEA25A1C18A91F003A24D5 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				A34B54D81C18AAFC00FBD33D /* Customer+CoreDataProperties.h */,
+				A34B54D91C18AAFC00FBD33D /* Customer+CoreDataProperties.m */,
+				A34B54DA1C18AAFC00FBD33D /* Customer.h */,
+				A34B54DB1C18AAFC00FBD33D /* Customer.m */,
+				A34B54DC1C18AAFC00FBD33D /* Item.h */,
+				A34B54DD1C18AAFC00FBD33D /* Item.m */,
+				A34B54DE1C18AAFC00FBD33D /* Item+CoreDataProperties.h */,
+				A34B54DF1C18AAFC00FBD33D /* Item+CoreDataProperties.m */,
+				A34B54E01C18AAFC00FBD33D /* Order.h */,
+				A34B54E11C18AAFC00FBD33D /* Order.m */,
+				A34B54E21C18AAFC00FBD33D /* Order+CoreDataProperties.h */,
+				A34B54E31C18AAFC00FBD33D /* Order+CoreDataProperties.m */,
+			);
+			name = Classes;
 			sourceTree = "<group>";
 		};
 		E84CA4E016272BA2009B2588 /* Login */ = {
@@ -1386,11 +1430,16 @@
 				E8F33B3F1616695E002DD7C6 /* MSPredicateTranslatorTests.m in Sources */,
 				A2ADF7E91914481B0078BB16 /* MSTableOperationTests.m in Sources */,
 				A258891E18A1A30000962F9A /* MSSyncTableTests.m in Sources */,
+				A34B54F51C18AB2A00FBD33D /* Item.m in Sources */,
+				A34B54FB1C18AB3B00FBD33D /* Order+CoreDataProperties.m in Sources */,
 				E87BB01C161A28FC008053F9 /* MSClientTests.m in Sources */,
+				A34B54F11C18AB1B00FBD33D /* Customer+CoreDataProperties.m in Sources */,
 				E87BB022161B57C8008053F9 /* MSUserTests.m in Sources */,
 				E87BB025161B5A4D008053F9 /* MSTableTests.m in Sources */,
 				A3514E3D1BCC62380032B74C /* MSClientConnectionTests.m in Sources */,
 				E8EA24C0161CFCF400BE055D /* MSURLbuilderTests.m in Sources */,
+				A34B54F91C18AB3700FBD33D /* Order.m in Sources */,
+				A34B54F71C18AB2E00FBD33D /* Item+CoreDataProperties.m in Sources */,
 				A24701C6196897A700385DA2 /* MSPushTests.m in Sources */,
 				A28224B3192ACFB700EF8743 /* CoreDataTestModel.xcdatamodeld in Sources */,
 				E8E37904161E2FC500C13F00 /* MSTestFilter.m in Sources */,
@@ -1401,6 +1450,7 @@
 				A295B2B3192AB2040067562E /* MSCoreDataStoreTests.m in Sources */,
 				A29F44A31953CBF30063C0C1 /* MSCoreDataStore+TestHelper.m in Sources */,
 				E84CA4D6162373E2009B2588 /* MSUserAgentBuilderTests.m in Sources */,
+				A34B54F31C18AB2500FBD33D /* Customer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1463,11 +1513,16 @@
 				F3EBDFFF1BAC311D00D82B10 /* MSTableFuncTests.m in Sources */,
 				F3EBE0001BAC311D00D82B10 /* MSClientTests.m in Sources */,
 				F3EBE0011BAC311D00D82B10 /* MSFilterTest.m in Sources */,
+				A34B54F61C18AB2B00FBD33D /* Item.m in Sources */,
+				A34B54FC1C18AB3C00FBD33D /* Order+CoreDataProperties.m in Sources */,
 				F3EBE0021BAC311D00D82B10 /* MSQueryTests.m in Sources */,
+				A34B54F21C18AB1D00FBD33D /* Customer+CoreDataProperties.m in Sources */,
 				F3EBE0031BAC311D00D82B10 /* MSTableTests.m in Sources */,
 				F3EBE0041BAC311D00D82B10 /* MSTestWaiter.m in Sources */,
 				F3EBE0051BAC311D00D82B10 /* MSUserTests.m in Sources */,
 				F3EBE0061BAC311D00D82B10 /* MSCoreDataStoreTests.m in Sources */,
+				A34B54FA1C18AB3800FBD33D /* Order.m in Sources */,
+				A34B54F81C18AB2F00FBD33D /* Item+CoreDataProperties.m in Sources */,
 				F3EBE0071BAC311D00D82B10 /* MSCoreDataStore+TestHelper.m in Sources */,
 				F3EBE0081BAC311D00D82B10 /* TodoItem.m in Sources */,
 				F3EBE0091BAC311D00D82B10 /* MSTableOperationTests.m in Sources */,
@@ -1478,6 +1533,7 @@
 				F3EBE00E1BAC311D00D82B10 /* MSPushTests.m in Sources */,
 				F3EBE00F1BAC311D00D82B10 /* MSPredicateTranslatorTests.m in Sources */,
 				F3EBE0101BAC311D00D82B10 /* MSJSONSerializerTests.m in Sources */,
+				A34B54F41C18AB2600FBD33D /* Customer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

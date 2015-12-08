@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="8195" systemVersion="15A284" minimumToolsVersion="Xcode 4.3">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="9057" systemVersion="15B42" minimumToolsVersion="Xcode 4.3">
     <entity name="Child" representedClassName="Child" syncable="YES">
         <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="value" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
@@ -17,6 +17,18 @@
         <attribute name="int32" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="int64" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="string" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Customer" representedClassName="Customer" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="phone" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="orders" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Order" inverseName="customer" inverseEntity="Order" syncable="YES"/>
+    </entity>
+    <entity name="Item" representedClassName="Item" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="price" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <relationship name="orders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Order" inverseName="items" inverseEntity="Order" syncable="YES"/>
     </entity>
     <entity name="ManySystemColumns" syncable="YES">
         <attribute name="createdAt" optional="YES" attributeType="Date" syncable="YES"/>
@@ -47,6 +59,12 @@
         <attribute name="table" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="tableKind" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
     </entity>
+    <entity name="Order" representedClassName="Order" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="customer" maxCount="1" deletionRule="Nullify" destinationEntity="Customer" inverseName="orders" inverseEntity="Customer" syncable="YES"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Item" inverseName="orders" inverseEntity="Item" syncable="YES"/>
+    </entity>
     <entity name="Parent" representedClassName="Parent" syncable="YES">
         <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
@@ -65,10 +83,13 @@
     <elements>
         <element name="Child" positionX="-90" positionY="-9" width="128" height="90"/>
         <element name="ColumnTypes" positionX="-54" positionY="54" width="128" height="210"/>
+        <element name="Customer" positionX="-99" positionY="-18" width="128" height="105"/>
+        <element name="Item" positionX="-108" positionY="-27" width="128" height="105"/>
         <element name="ManySystemColumns" positionX="-252" positionY="27" width="128" height="150"/>
         <element name="MS_TableConfig" positionX="160" positionY="192" width="128" height="118"/>
         <element name="MS_TableOperationErrors" positionX="153" positionY="-189" width="128" height="103"/>
         <element name="MS_TableOperations" positionX="-63" positionY="-189" width="128" height="118"/>
+        <element name="Order" positionX="-117" positionY="-36" width="128" height="105"/>
         <element name="Parent" positionX="-99" positionY="-18" width="128" height="90"/>
         <element name="TodoItem" positionX="-324" positionY="-45" width="128" height="105"/>
         <element name="TodoNoVersion" positionX="-234" positionY="-126" width="128" height="73"/>

@@ -7,10 +7,14 @@
 #import "MSCoreDataStore+TestHelper.h"
 #import "MSJSONSerializer.h"
 #import "TodoItem.h"
+#import "Customer+CoreDataProperties.h"
+#import "Item+CoreDataProperties.h"
+#import "Order+CoreDataProperties.h"
 
 @interface MSCoreDataStoreTests : XCTestCase {
     BOOL done;
 }
+
 @property (nonatomic, strong) MSCoreDataStore *store;
 @property (nonatomic, strong) NSManagedObjectContext *context;
 @property (nonatomic, strong) MSClient *client;
@@ -97,11 +101,10 @@ static NSString *const TableName = @"TodoItem";
     XCTAssertEqual(result.items.count, 0, @"Expected the table to be empty");
 }
 
-
 -(void)testUpsertSingleRecordAndReadSuccess
 {
     NSError *error;
-    NSArray *testArray = @[@{@"id":@"ABC", @"text": @"test1", @"__version":@"APPLE"}];
+    NSArray *testArray = @[ @{ @"id":@"ABC", @"text": @"test1", @"version":@"APPLE" } ];
     
     [self.store upsertItems:testArray table:TableName orError:&error];
     XCTAssertNil(error, @"upsert failed: %@", error.description);
@@ -110,8 +113,7 @@ static NSString *const TableName = @"TodoItem";
     XCTAssertNil(error, @"readTable:withItemId: failed: %@", error.description);
     XCTAssertNotNil(item, @"item should not have been nil");
     XCTAssertTrue([item[@"id"] isEqualToString:@"ABC"], @"Incorrect item id");
-    XCTAssertNotNil(item[MSSystemColumnVersion], @"__version was missing");
-    XCTAssertNil(item[@"ms_version"], @"__version was missing");
+    XCTAssertNotNil(item[MSSystemColumnVersion], @"version was missing");
     
     MSSyncTable *todoItem = [[MSSyncTable alloc] initWithName:TableName client:self.client];
     MSQuery *query = [[MSQuery alloc] initWithSyncTable:todoItem predicate:nil];
@@ -124,7 +126,6 @@ static NSString *const TableName = @"TodoItem";
     XCTAssertNotNil(item);
     XCTAssertEqualObjects(item[@"id"], @"ABC");
     XCTAssertNotNil(item[MSSystemColumnVersion]);
-    XCTAssertNil(item[@"ms_version"]);
 }
 
 -(void)testUpsertMultipleRecordsAndReadSuccess
@@ -248,10 +249,22 @@ static NSString *const TableName = @"TodoItem";
     XCTAssertTrue(msKeys.count == 0, @"ms_ column keys were exposed");
 }
 
--(void)testUpsertRelationships
+-(void)testUpsertNoTableError
 {
     NSError *error;
-    NSDictionary *originalItem = @{@"id":@"A", @"name": @"test1", @"child":@"123"};
+    NSArray *testArray = @[@{@"id":@"A", @"text": @"test1"}];
+    
+    [self.store upsertItems:testArray table:@"NoSuchTable" orError:&error];
+    
+    XCTAssertNotNil(error, @"upsert failed: %@", error.description);
+    XCTAssertEqual(error.code, MSSyncTableLocalStoreError);
+}
+
+
+-(void)testUpsert_Relationships_InvalidChild_Error
+{
+    NSError *error;
+    NSDictionary *originalItem = @{ @"id" : @"A", @"name" : @"test1", @"child" : @"123" };
     
     [self.store upsertItems:@[originalItem] table:@"Parent" orError:&error];
     XCTAssertNil(error, @"upsert failed: %@", error.description);
@@ -263,15 +276,251 @@ static NSString *const TableName = @"TodoItem";
     XCTAssertNil(item[@"child"]);
 }
 
--(void)testUpsertNoTableError
+-(void)testUpsert_Relationships_NewRecords_Success
 {
     NSError *error;
-    NSArray *testArray = @[@{@"id":@"A", @"text": @"test1"}];
     
-    [self.store upsertItems:testArray table:@"NoSuchTable" orError:&error];
+    [self populateDefaultParentChild];
+    
+    NSDictionary *item = [self.store readTable:@"Parent" withItemId:@"P_1" orError:&error];
+    XCTAssertNil(error, @"readTable:withItemId: failed: %@", error.description);
+    XCTAssertNotNil(item, @"item should not have been nil");
+    
+    NSDictionary *childItem = [self.store readTable:@"Child" withItemId:@"C_1" orError:&error];
+    XCTAssertNil(error, @"readTable:withItemId: failed: %@", error.description);
+    XCTAssertNotNil(childItem, @"item should not have been nil");
+    
+    // Verify core data state as well
+    [self.context performBlockAndWait:^{
+        NSManagedObject *parent = [self lookupRecordWithId:@"P_1" table:@"Parent"];
+        XCTAssertNotNil(parent);
+        
+        NSArray *children = [parent objectIDsForRelationshipNamed:@"child"];
+        XCTAssertEqual(children.count, 1);
+    }];
+}
 
-    XCTAssertNotNil(error, @"upsert failed: %@", error.description);
-    XCTAssertEqual(error.code, MSSyncTableLocalStoreError);
+-(void)testUpsert_Relationships_ExistingChildRecord_Success
+{
+    NSError *error;
+    NSArray *testArray = @[
+                           @{
+                               @"id" : @"P_1",
+                               @"name": @"ParentA",
+                               @"child": @{
+                                       @"id": @"C_1",
+                                       @"value" : @14
+                                       }
+                               }
+                           ];
+    
+    // Put a base child record into the store
+    [self.store upsertItems:@[ @{ @"id": @"C_1", @"value" : @10 } ]
+                      table:@"Child"
+                    orError:&error];
+    
+    // Now insert a new Parent record
+    [self.store upsertItems:testArray table:@"Parent" orError:&error];
+    XCTAssertNil(error, @"upsert failed: %@", error.description);
+    
+    NSDictionary *item = [self.store readTable:@"Parent" withItemId:@"P_1" orError:&error];
+    XCTAssertNil(error, @"readTable:withItemId: failed: %@", error.description);
+    XCTAssertNotNil(item, @"item should not have been nil");
+    
+    NSDictionary *childItem = [self.store readTable:@"Child" withItemId:@"C_1" orError:&error];
+    XCTAssertNil(error, @"readTable:withItemId: failed: %@", error.description);
+    XCTAssertNotNil(childItem, @"item should not have been nil");
+    
+    // Verify value was changed correctly
+    XCTAssertEqualObjects(childItem[@"value"], @14);
+    
+    // Verify core data state as well
+    [self.context performBlockAndWait:^{
+        NSManagedObject *parent = [self lookupRecordWithId:@"P_1" table:@"Parent"];
+        XCTAssertNotNil(parent);
+        
+        NSArray *children = [parent objectIDsForRelationshipNamed:@"child"];
+        XCTAssertEqual(children.count, 1);
+    }];
+}
+
+-(void)testUpsert_Relationships_ExistingParentRecord_Success
+{
+    NSError *error;
+    NSArray *testArray = @[ @{
+        @"id" : @"P_1",
+        @"child": @{ @"id": @"C_1", @"value" : @14 }
+    } ];
+    
+    // Put the record we are updating into the store
+    [self.store upsertItems:@[ @{ @"id": @"P_1", @"name" : @"ParentA" } ]
+                      table:@"Parent"
+                    orError:&error];
+    
+    // Now insert a new Parent record
+    [self.store upsertItems:testArray table:@"Parent" orError:&error];
+    XCTAssertNil(error, @"upsert failed: %@", error.description);
+    
+    NSDictionary *item = [self.store readTable:@"Parent" withItemId:@"P_1" orError:&error];
+    XCTAssertNil(error, @"readTable:withItemId: failed: %@", error.description);
+    XCTAssertNotNil(item, @"item should not have been nil");
+    XCTAssertTrue([item[@"id"] isEqualToString:@"P_1"], @"Incorrect item id");
+    
+    NSDictionary *childItem = [self.store readTable:@"Child" withItemId:@"C_1" orError:&error];
+    XCTAssertNil(error, @"readTable:withItemId: failed: %@", error.description);
+    XCTAssertNotNil(childItem, @"item should not have been nil");
+    
+    // Verify core data state as well
+    [self.context performBlockAndWait:^{
+        NSManagedObject *parent = [self lookupRecordWithId:@"P_1" table:@"Parent"];
+        XCTAssertNotNil(parent);
+        
+        NSArray *children = [parent objectIDsForRelationshipNamed:@"child"];
+        XCTAssertEqual(children.count, 1);
+    }];
+}
+
+-(void)testUpsert_Relationships_KeptIfPropertyNil_Success
+{
+    NSError *error;
+    
+    [self populateDefaultParentChild];
+    
+    // Update just the parent record
+    [self.store upsertItems:@[ @{ @"id" : @"P_1", @"name": @"ParentB" } ]
+                      table:@"Parent"
+                    orError:&error];
+    
+    // Read actual object
+    [self.context performBlockAndWait:^{
+        NSManagedObject *parent = [self lookupRecordWithId:@"P_1" table:@"Parent"];
+        XCTAssertNotNil(parent);
+        
+        NSArray *children = [parent objectIDsForRelationshipNamed:@"child"];
+        XCTAssertTrue(children.count == 1);
+        
+        NSManagedObject *child = [self lookupRecordWithId:@"C_1" table:@"Child"];
+        XCTAssertNotNil(child);
+        
+        children = [child objectIDsForRelationshipNamed:@"parent"];
+        XCTAssertTrue(children.count == 1);
+    }];
+}
+
+-(void)testUpsert_Relationships_RemoveExistingRelationship_Success
+{
+    NSError *error;
+    [self populateDefaultParentChild];
+    
+    // Seperate the relationship now
+    [self.store upsertItems:@[ @{ @"id" : @"P_1", @"child" : [NSNull null] } ]
+                      table:@"Parent"
+                    orError:&error];
+    
+    // Read actual object
+    [self.context performBlockAndWait:^{
+        NSManagedObject *parent = [self lookupRecordWithId:@"P_1" table:@"Parent"];
+        XCTAssertNotNil(parent);
+        
+        NSArray *children = [parent objectIDsForRelationshipNamed:@"child"];
+        XCTAssertNil(children);
+        
+        NSManagedObject *child = [self lookupRecordWithId:@"C_1" table:@"Child"];
+        XCTAssertNotNil(child);
+        
+        children = [child objectIDsForRelationshipNamed:@"parent"];
+        XCTAssertNil(children);
+    }];
+}
+
+-(void)testUpsert_Relationships_ManyToMany_Success
+{
+    NSError *error;
+    NSArray *testOrders = @[ @{
+        @"id" : @"O-1",
+        @"customer" : @{ @"id" : @"C-1", @"name" : @"Fred" },
+        @"items" : @[
+                @{ @"id" : @"I-1", @"name" : @"Phone" },
+                @{ @"id" : @"I-2", @"name" : @"Laptop" },
+                @{ @"id" : @"I-3", @"name" : @"Tablet" }
+        ]
+    }, @{
+         @"id" : @"O-2",
+         @"customer" : @{ @"id" : @"C-1", @"name" : @"Fred" },
+         @"items" : @[
+             @{ @"id" : @"I-1", @"name" : @"Phone" },
+             @{ @"id" : @"I-4", @"name" : @"Keyboard" }
+         ]
+    }, @{
+         @"id" : @"O-3",
+         @"customer" : @{ @"id" : @"C-2", @"name" : @"George" },
+         @"items" : @[
+                 @{ @"id" : @"I-1", @"name" : @"Phone" },
+                 @{ @"id" : @"I-3", @"name" : @"Tablet" },
+             ]
+     }  ];
+
+    [self.store upsertItems:testOrders
+                      table:@"Order"
+                    orError:&error];
+    
+    // Verify all our records were created and relationships look good
+    
+    [self.context performBlockAndWait:^{
+        // Check customers were created ok
+        Customer *customer = (Customer *)[self lookupRecordWithId:@"C-1" table:@"Customer"];
+        XCTAssertNotNil(customer);
+        XCTAssertEqualObjects(customer.name, @"Fred");
+        XCTAssertEqual(customer.orders.count, 2);
+        
+        customer = (Customer *)[self lookupRecordWithId:@"C-2" table:@"Customer"];
+        XCTAssertNotNil(customer);
+        XCTAssertEqualObjects(customer.name, @"George");
+        XCTAssertEqual(customer.orders.count, 1);
+        
+        // Check items were created ok
+        Item *item = (Item *)[self lookupRecordWithId:@"I-1" table:@"Item"];
+        XCTAssertNotNil(item);
+        XCTAssertEqualObjects(item.name, @"Phone");
+        XCTAssertEqual(item.orders.count, 3);
+
+        item = (Item *)[self lookupRecordWithId:@"I-2" table:@"Item"];
+        XCTAssertNotNil(item);
+        XCTAssertEqualObjects(item.name, @"Laptop");
+        XCTAssertEqual(item.orders.count, 1);
+        
+        item = (Item *)[self lookupRecordWithId:@"I-3" table:@"Item"];
+        XCTAssertNotNil(item);
+        XCTAssertEqualObjects(item.name, @"Tablet");
+        XCTAssertEqual(item.orders.count, 2);
+        
+        item = (Item *)[self lookupRecordWithId:@"I-4" table:@"Item"];
+        XCTAssertNotNil(item);
+        XCTAssertEqualObjects(item.name, @"Keyboard");
+        XCTAssertEqual(item.orders.count, 1);
+        
+        Order *order = (Order *)[self lookupRecordWithId:@"O-1" table:@"Order"];
+        XCTAssertNotNil(order);
+        XCTAssertNotNil(order.customer);
+        customer = (Customer *)order.customer;
+        XCTAssertEqualObjects(customer.id, @"C-1");
+        XCTAssertEqual(order.items.count, 3);
+
+        order = (Order *)[self lookupRecordWithId:@"O-2" table:@"Order"];
+        XCTAssertNotNil(order);
+        XCTAssertNotNil(order.customer);
+        customer = (Customer *)order.customer;
+        XCTAssertEqualObjects(customer.id, @"C-1");
+        XCTAssertEqual(order.items.count, 2);
+        
+        order = (Order *)[self lookupRecordWithId:@"O-3" table:@"Order"];
+        XCTAssertNotNil(order);
+        XCTAssertNotNil(order.customer);
+        customer = (Customer *)order.customer;
+        XCTAssertEqualObjects(customer.id, @"C-2");
+        XCTAssertEqual(order.items.count, 2);
+        
+    }];
 }
 
 -(void)testReadTable_RecordWithNullPropertyValue
@@ -672,6 +921,9 @@ static NSString *const TableName = @"TodoItem";
     XCTAssertEqualObjects(todoItemDictionary[@"sort"], @10);
 }
 
+
+#pragma mark helper functions 
+
 - (void) populateTestData
 {
     NSError *error;
@@ -681,6 +933,41 @@ static NSString *const TableName = @"TodoItem";
     
     [self.store upsertItems:testArray table:TableName orError:&error];
     XCTAssertNil(error, @"upsert failed: %@", error.description);
+}
+
+-(void) populateDefaultParentChild
+{
+    NSError *error;
+    NSArray *testArray = @[ @{
+           @"id" : @"P_1",
+           @"name" : @"ParentA",
+           @"child": @{ @"id": @"C_1", @"value" : @14 }
+    } ];
+    
+    [self.store upsertItems:testArray table:@"Parent" orError:&error];
+    XCTAssertNil(error, @"upsert failed: %@", error.description);
+}
+
+-(void) populateDefaultItems
+{
+    NSError *error;
+    NSArray *testArray = @[ @{ @"id" : @"A", @"name" : @"Phone", @"price" : @600 },
+                            @{ @"id" : @"B", @"name" : @"Laptop", @"price" : @1500 },
+                            @{ @"id" : @"C", @"name" : @"Tablet", @"price" : @800 } ];
+    
+    [self.store upsertItems:testArray table:TableName orError:&error];
+    XCTAssertNil(error, @"upsert failed: %@", error.description);
+}
+
+-(NSManagedObject *)lookupRecordWithId:(NSString *)recordId table:(NSString *)table
+{
+    NSFetchRequest *fr = [[NSFetchRequest alloc] init];
+    fr.entity = [NSEntityDescription entityForName:table inManagedObjectContext:self.context];
+    fr.predicate = [NSPredicate predicateWithFormat:@"%K ==[c] %@", MSSystemColumnId, recordId];
+    
+    NSArray<__kindof NSManagedObject *> *results =[self.context executeFetchRequest:fr error:nil];
+    
+    return results[0];
 }
 
 @end

@@ -90,19 +90,91 @@
     return serverItem;
 }
 
-/// Helper function to convert a server (external) item to only contain the appropriate keys for storage
-/// in core data tables. This means we need to change system columns (prefix: __) to use ms_, and remove
-/// any retrieved columns from the user's schema that aren't in the local store's schema
-+(NSDictionary *) internalItemFromExternalItem:(NSDictionary *)item forEntityDescription:(NSEntityDescription *)entityDescription
+-(NSManagedObject *) updateManagedObjectsForItem:(NSDictionary *)item table:(NSString *)table orError:(NSError **)error
+{
+    // Get our base entity description and confirm we have this table locally
+    NSEntityDescription *entity = [NSEntityDescription entityForName:table inManagedObjectContext:self.context];
+    if (!entity) {
+        if (error) {
+            *error = [MSCoreDataStore errorInvalidTable:table];
+        }
+        return nil;
+    }
+    
+    // Verify if record already exists in the database
+    NSManagedObject *baseObject = [self getRecordForTable:table itemId:item[MSSystemColumnId] orError:error];
+    if (error && *error) {
+        return nil;
+    }
+    
+    // If we didn't get a record with this id, we should create a new one
+    if (baseObject == nil) {
+        baseObject = [NSEntityDescription insertNewObjectForEntityForName:table
+                                                    inManagedObjectContext:self.context];
+    }
+    
+    // Next set any changed values on the object as needed
+    NSDictionary *newItem = [self internalItemFromExternalItem:item forEntityDescription:entity];
+    [baseObject setValuesForKeysWithDictionary:newItem];
+    
+    return baseObject;
+}
+
+/// Helper function to convert a server (external) item to only contain the appropriate keys for
+/// storage in core data tables. This means we need to remove any retrieved columns from the user's
+/// schema that aren't in the local store's schema
+-(NSDictionary *) internalItemFromExternalItem:(NSDictionary *)item forEntityDescription:(NSEntityDescription *)entityDescription
 {
     NSMutableDictionary *modifiedItem = [item mutableCopy];
 
-    // Remove any attributes in the dictionary that are not also in the data model
+    // Copy over only attributes in the dictionary that are also in the data model
     NSMutableDictionary *adjustedItem = [NSMutableDictionary new];
     for (NSString *attributeName in entityDescription.attributesByName) {
         [adjustedItem setValue:[modifiedItem objectForKey:attributeName] forKey:attributeName];
     }
-
+    
+    // Now check if we have any relationships specified in the object
+    for (NSString *relationshipName in entityDescription.relationshipsByName) {
+        id object = item[relationshipName];
+        if (object == nil) {
+            // If the relationship property has no value, keep status quo
+            continue;
+        }
+        
+        // If set to NSNull, try to remove the relationship instead
+        if (object == [NSNull null]) {
+            [adjustedItem setValue:[NSNull null] forKey:relationshipName];
+            continue;
+        }
+        
+        NSRelationshipDescription *relationship = entityDescription.relationshipsByName[relationshipName];
+        NSString *destinationTable = relationship.destinationEntity.name;
+        
+        if ([object isKindOfClass:[NSDictionary class]]) { // 1:(1,N)
+            NSDictionary *childItem = item[relationshipName];
+            NSManagedObject *childObject = [self updateManagedObjectsForItem:childItem
+                                                                       table:destinationTable
+                                                                     orError:nil];
+            [adjustedItem setValue:childObject forKey:relationshipName];
+            
+        } else if ([object isKindOfClass:[NSArray class]]) {
+            // N:(M,1), Assumption: all related items are always specified when received
+            NSArray *childItems = item[relationshipName];
+            NSMutableSet<NSManagedObject *> *childObjects = [NSMutableSet setWithCapacity:childItems.count];
+            for (NSDictionary *childItem in childItems) {
+                if (childItem != nil) {
+                    [childObjects addObject:[self updateManagedObjectsForItem:childItem
+                                                                        table:destinationTable
+                                                                       orError:nil]];
+                }
+            }
+            [adjustedItem setValue:childObjects forKey:relationshipName];
+            
+        } else {
+            //TODO: throw otherwise?
+        }
+    }
+    
     return adjustedItem;
 }
 
@@ -247,20 +319,7 @@
         }
         
         for (NSDictionary *item in items) {
-            NSManagedObject *managedItem = [self getRecordForTable:table itemId:[item objectForKey:MSSystemColumnId] orError:error];
-            if (error && *error) {
-                // Reset since we may have made changes earlier
-                [self.context reset];
-                return;
-            }
-            
-            if (managedItem == nil) {
-                managedItem = [NSEntityDescription insertNewObjectForEntityForName:table
-                                                            inManagedObjectContext:self.context];
-            }
-            
-            NSDictionary *managedItemDictionary = [MSCoreDataStore internalItemFromExternalItem:item forEntityDescription:entity];
-            [managedItem setValuesForKeysWithDictionary:managedItemDictionary];
+            [self updateManagedObjectsForItem:item table:table orError:error];
         }
         
         success = [self.context save:error];
