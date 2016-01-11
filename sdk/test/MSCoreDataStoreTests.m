@@ -265,6 +265,7 @@ static NSString *const TableName = @"TodoItem";
 {
     NSError *error;
     NSDictionary *originalItem = @{ @"id" : @"A", @"name" : @"test1", @"child" : @"123" };
+    self.store.expandRelationshipsOnUpsert = YES;
     
     [self.store upsertItems:@[originalItem] table:@"Parent" orError:&error];
     XCTAssertNil(error, @"upsert failed: %@", error.description);
@@ -279,6 +280,7 @@ static NSString *const TableName = @"TodoItem";
 -(void)testUpsert_Relationships_NewRecords_Success
 {
     NSError *error;
+    self.store.expandRelationshipsOnUpsert = YES;
     
     [self populateDefaultParentChild];
     
@@ -313,6 +315,8 @@ static NSString *const TableName = @"TodoItem";
                                        }
                                }
                            ];
+    
+    self.store.expandRelationshipsOnUpsert = YES;
     
     // Put a base child record into the store
     [self.store upsertItems:@[ @{ @"id": @"C_1", @"value" : @10 } ]
@@ -352,6 +356,8 @@ static NSString *const TableName = @"TodoItem";
         @"child": @{ @"id": @"C_1", @"value" : @14 }
     } ];
     
+    self.store.expandRelationshipsOnUpsert = YES;
+    
     // Put the record we are updating into the store
     [self.store upsertItems:@[ @{ @"id": @"P_1", @"name" : @"ParentA" } ]
                       table:@"Parent"
@@ -384,6 +390,8 @@ static NSString *const TableName = @"TodoItem";
 {
     NSError *error;
     
+    self.store.expandRelationshipsOnUpsert = YES;
+    
     [self populateDefaultParentChild];
     
     // Update just the parent record
@@ -410,6 +418,8 @@ static NSString *const TableName = @"TodoItem";
 -(void)testUpsert_Relationships_RemoveExistingRelationship_Success
 {
     NSError *error;
+    self.store.expandRelationshipsOnUpsert = YES;
+    
     [self populateDefaultParentChild];
     
     // Seperate the relationship now
@@ -436,6 +446,8 @@ static NSString *const TableName = @"TodoItem";
 -(void)testUpsert_Relationships_ManyToMany_Success
 {
     NSError *error;
+    self.store.expandRelationshipsOnUpsert = YES;
+    
     NSArray *testOrders = @[ @{
         @"id" : @"O-1",
         @"customer" : @{ @"id" : @"C-1", @"name" : @"Fred" },

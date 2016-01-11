@@ -134,44 +134,43 @@
     }
     
     // Now check if we have any relationships specified in the object
-    for (NSString *relationshipName in entityDescription.relationshipsByName) {
-        id object = item[relationshipName];
-        if (object == nil) {
-            // If the relationship property has no value, keep status quo
-            continue;
-        }
-        
-        // If set to NSNull, try to remove the relationship instead
-        if (object == [NSNull null]) {
-            [adjustedItem setValue:[NSNull null] forKey:relationshipName];
-            continue;
-        }
-        
-        NSRelationshipDescription *relationship = entityDescription.relationshipsByName[relationshipName];
-        NSString *destinationTable = relationship.destinationEntity.name;
-        
-        if ([object isKindOfClass:[NSDictionary class]]) { // 1:(1,N)
-            NSDictionary *childItem = item[relationshipName];
-            NSManagedObject *childObject = [self updateManagedObjectsForItem:childItem
-                                                                       table:destinationTable
-                                                                     orError:nil];
-            [adjustedItem setValue:childObject forKey:relationshipName];
-            
-        } else if ([object isKindOfClass:[NSArray class]]) {
-            // N:(M,1), Assumption: all related items are always specified when received
-            NSArray *childItems = item[relationshipName];
-            NSMutableSet<NSManagedObject *> *childObjects = [NSMutableSet setWithCapacity:childItems.count];
-            for (NSDictionary *childItem in childItems) {
-                if (childItem != nil) {
-                    [childObjects addObject:[self updateManagedObjectsForItem:childItem
-                                                                        table:destinationTable
-                                                                       orError:nil]];
-                }
+    if (self.expandRelationshipsOnUpsert) {
+        for (NSString *relationshipName in entityDescription.relationshipsByName) {
+            id object = item[relationshipName];
+            if (object == nil) {
+                // If the relationship property has no value, keep status quo
+                continue;
             }
-            [adjustedItem setValue:childObjects forKey:relationshipName];
             
-        } else {
-            //TODO: throw otherwise?
+            // If set to NSNull, try to remove the relationship instead
+            if (object == [NSNull null]) {
+                [adjustedItem setValue:[NSNull null] forKey:relationshipName];
+                continue;
+            }
+            
+            NSRelationshipDescription *relationship = entityDescription.relationshipsByName[relationshipName];
+            NSString *destinationTable = relationship.destinationEntity.name;
+            
+            if ([object isKindOfClass:[NSDictionary class]]) { // 1:(1,N)
+                NSDictionary *childItem = item[relationshipName];
+                NSManagedObject *childObject = [self updateManagedObjectsForItem:childItem
+                                                                           table:destinationTable
+                                                                         orError:nil];
+                [adjustedItem setValue:childObject forKey:relationshipName];
+                
+            } else if ([object isKindOfClass:[NSArray class]]) {
+                // N:(M,1), Assumption: all related items are always specified when received
+                NSArray *childItems = item[relationshipName];
+                NSMutableSet<NSManagedObject *> *childObjects = [NSMutableSet setWithCapacity:childItems.count];
+                for (NSDictionary *childItem in childItems) {
+                    if (childItem != nil) {
+                        [childObjects addObject:[self updateManagedObjectsForItem:childItem
+                                                                            table:destinationTable
+                                                                           orError:nil]];
+                    }
+                }
+                [adjustedItem setValue:childObjects forKey:relationshipName];
+            }
         }
     }
     
@@ -396,7 +395,6 @@
     
     return success;
 }
-
 
 # pragma mark Error helpers
 

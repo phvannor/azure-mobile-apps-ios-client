@@ -57,5 +57,13 @@
  */
 -(nonnull NSDictionary *) tableItemFromManagedObject:(nonnull NSManagedObject *)object;
 
+/** 
+ If set, during an upsert (From server or locally) any relationship properties on the table
+ will be looked at, and if data is present will be added to that related table. If set explictly
+ to null, that record will be deleted.  If nil, the property will be ignored.
+ 
+ When false (default) any value in a relationship property will just be ignored during the upsert.
+ */
+@property (nonatomic) bool expandRelationshipsOnUpsert;
 
 @end
