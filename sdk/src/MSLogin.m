@@ -8,10 +8,13 @@
 #import "MSClientConnection.h"
 #import "MSClient.h"
 #import "MSClientInternal.h"
+#import "MSURLBuilder.h"
 
 #if TARGET_OS_IPHONE
+@import SafariServices;
 #import "MSLoginController.h"
 #endif
+
 
 #pragma mark * MSLogin Private Interface
 
@@ -50,12 +53,28 @@
 
 #if TARGET_OS_IPHONE
 -(void) loginWithProvider:(NSString *)provider
-               parameters:(nonnull NSDictionary *)parameters
+               parameters:(nullable NSDictionary *)parameters
                controller:(UIViewController *)controller
                  animated:(BOOL)animated
                completion:(MSClientLoginBlock)completion
 {
-    __block MSLoginController *loginController = nil;
+    __block UIViewController *loginController = nil;
+    
+    provider = [self normalizeProvider:provider];
+    if ([SFSafariViewController class]) {
+        
+        NSURL *url = [self loginURLForProvider:provider parameters:parameters];
+        loginController = [[SFSafariViewController alloc] initWithURL:url];
+        
+        dispatch_async(dispatch_get_main_queue(),^{
+            [controller presentViewController:loginController
+                                     animated:animated
+                                   completion:nil];
+        });
+        
+        return;
+    }
+    
     __block MSUser *localUser = nil;
     __block NSError *localError = nil;
     __block int allDoneCount = 0;
@@ -91,14 +110,13 @@
         callCompletionIfAllDone();
     };
     
-    provider = [self normalizeProvider:provider];
     loginController = [self loginViewControllerWithProvider:provider
                                                  parameters:parameters
                                                  completion:loginCompletion];
     
     // On iPhone this will do nothing, but on iPad it will present a smaller
     // view that looks much better for login
-    loginController.modalPresentationStyle = UIModalPresentationFormSheet;
+    loginController.modalPresentationStyle = UIModalPresentationFormSheet;    
     
     dispatch_async(dispatch_get_main_queue(),^{
         [controller presentViewController:loginController
@@ -108,7 +126,7 @@
 }
 
 -(MSLoginController *) loginViewControllerWithProvider:(NSString *)provider
-                                            parameters:(nonnull NSDictionary *)parameters
+                                            parameters:(nullable NSDictionary *)parameters
                                             completion:(MSClientLoginBlock)completion
 {
     provider = [self normalizeProvider:provider];
@@ -219,6 +237,25 @@
     }
     
     return request;
+}
+
+- (NSURL *) loginURLForProvider:(NSString *)provider parameters:(NSDictionary *)parameters
+{
+    NSURL *start = [self.client.loginURL URLByAppendingPathComponent:provider];
+    
+    NSMutableDictionary *params;
+    if (parameters) {
+        params = [parameters mutableCopy];
+    } else {
+        params = [NSMutableDictionary new];
+    }
+    
+    // For now we do not let this be overridden, and are not worried about alt casing
+    params[@"session_mode"] = @"token";
+    params[@"post_login_redirect_url"] = @"com.microsoft.azure.test.ZumoE2ETestApp://login/done";
+    
+    return [MSURLBuilder URLByAppendingQueryParameters:params
+                                                  toURL:start];
 }
 
 @end

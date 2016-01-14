@@ -50,10 +50,11 @@ static NSString *lastUserIdentityObjectKey = @"lastUserIdentityObject";
     
     NSInteger indexOfLastUnattendedTest = [result count];
     
-    NSArray *providers = @[ @"facebook", @"twitter", @"google", @"microsoftaccount", @"aad" ];
+    NSArray *providers = @[ @"twitter", @"facebook", @"twitter", @"google", @"microsoftaccount", @"aad" ];
     NSArray *clientProviders = @[ @"facebook", @"twitter", @"microsoftaccount" ];
     
-    for (int useSimplifiedLogin = 0; useSimplifiedLogin <= 1; useSimplifiedLogin++) {
+    //todo: put back to 0
+    for (int useSimplifiedLogin = 1; useSimplifiedLogin <= 1; useSimplifiedLogin++) {
         for (NSString *provider in providers) {
             BOOL useSimplified = useSimplifiedLogin == 1;
             [result addObject:[self createLogoutTest]];
